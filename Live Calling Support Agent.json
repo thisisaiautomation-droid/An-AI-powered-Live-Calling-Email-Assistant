@@ -1,0 +1,196 @@
+{
+  "name": "Live Calling Support Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "798c7b34-012f-48a0-ad82-0373dfeff46b",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "049134e7-a7d2-4ccc-b1b3-437b25b7f434",
+      "name": "Webhook",
+      "webhookId": "798c7b34-012f-48a0-ad82-0373dfeff46b"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=email for:{{ $json.body.to }}\nemail content: {{ $json.body.emailContent }}",
+        "options": {
+          "systemMessage": "You are an AI agent responsible for drafting and sending professional emails based on user instructions. You have access to two tools: contactData to find email addresses and sendEmail to compose and send emails. Your objective is to identify the recipient's contact information, draft a professional email, and sign off as \"Abdul\" before sending.\n\nTools\n\ncontactData: Retrieves the recipient's email address based on their name.\n\nInput: Name (e.g., \"John Doe\").\n\nOutput: Email address (e.g.. \"johndoe@example.com\").\n\nsendEmail: Sends an email with a subject and body.\nInput:\n\nrecipient: Email address (e.g., \"johndoe@example.com\").\n\nsubject: Email subject (e.g \"Meeting Request\").\n\nbody: Email body (e.g., \"Hi John, meeting is set for Tuesday.\")."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "811c8794-435a-4c56-ae2e-19bc191955eb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "97da40ca-0a4c-47ea-a5ee-dbba221f3a6d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8K4ZzFHGQEr5fi4B",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1qZhZcyUAlhTxI1WneH-JlxQ-HFnJXPZd-Bv2c8Nz4HU",
+          "mode": "list",
+          "cachedResultName": "n8n Email list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qZhZcyUAlhTxI1WneH-JlxQ-HFnJXPZd-Bv2c8Nz4HU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qZhZcyUAlhTxI1WneH-JlxQ-HFnJXPZd-Bv2c8Nz4HU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        208
+      ],
+      "id": "ff700737-3651-4b44-a834-58fac997c673",
+      "name": "contactData",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Hn54lQyIJF44XqzP",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.to }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ $json.body.emailContent }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        528,
+        208
+      ],
+      "id": "b6e8d4fb-3ab1-4d78-80af-b18f0849ec10",
+      "name": "sendEmail",
+      "webhookId": "478638a8-4c91-4c2c-9e62-f4cedbbbcea2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yDzLsjX3nVmruQHj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        560,
+        0
+      ],
+      "id": "bdf181dd-2df0-4924-bc91-20d7fe7e5368",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contactData": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sendEmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d489d228-e9e6-43fd-9a6c-a71f3b381378",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fc2cec586740d404631ba8a0be04b16fe8e9141898b46e7e157befbdbf0d940f"
+  },
+  "id": "vksJNg2MyL4E7fwS",
+  "tags": []
+}
